@@ -1,0 +1,5 @@
+opencv-contrib-python==3.4.2.17
+grpcio==1.48.2
+tensorflow-gpu==2.4.1
+ipykernel==6.16.2
+
