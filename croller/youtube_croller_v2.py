@@ -6,7 +6,7 @@ import pytube
 from pytube.exceptions import VideoPrivate, LiveStreamError, AgeRestrictedError,VideoUnavailable
 from pytube.cli import on_progress
 from pytube import YouTube
-
+import csv
 
 #파일 없을 시 만들어주는 함수
 def makedirs(path):
@@ -57,13 +57,15 @@ def youtube_download(youtube_id, imdb_id, path) :
         pass
 
 # youtube 영상을 저장할 path 지정
-video_store_path = '/home/gpuadmin/data/mv_trailer'
+# vid_save_path = '/home/gpuadmin/data/mv_trailer'
+vid_save_path = 'E:\\NRF_2022\\vid_dataset' + '\\mv_trailer'
 
-makedirs(video_store_path)
+makedirs(vid_save_path)
 
 youtube_id=[]
 imdb_id=[]
-json_path='/home/gpuadmin/dev/multi-label-classification/dataset/filtered_trailer_url_s1.json' # 1200개
+# json_path='/home/gpuadmin/dev/multi-label-classification/dataset/filtered_trailer_url_s1.json' # 1200개
+json_path='../dataset/filtered_trailer_url_s1.json'
 imdb_id=jsonParsing(json_path)[0]
 youtube_id=jsonParsing(json_path)[1]
 print(youtube_id[0])
@@ -71,45 +73,48 @@ print(imdb_id)
 print(len(youtube_id))
 
 
+
 # printable한 문자로만 처리 (ex ASCII CODE)
 # 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
 # !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ \t\n\r\x0b\x0c
-
+f = open('vid_dataset.csv','w', newline='')
+wr = csv.writer(f)
 i=0
 j=0
-# youtube_id 개수만큼 다운로드
-# i=87
-# for i in range(len(youtube_id)):
 
+# youtube_id 개수만큼 다운로드
 # while i<=len(youtube_id):
 while i<20:
     try :
         print(f"youtube_id:{youtube_id[i]}")
         printable = set(string.printable)
         ' '.join(filter(lambda x: x in printable, youtube_id[i]))
-        youtube_download(youtube_id[i], imdb_id[i], video_store_path)
+        youtube_download(youtube_id[i], imdb_id[i], vid_save_path)
+        path_imdb_id = vid_save_path + '\\' + imdb_id[i]
+        wr.writerow([path_imdb_id]) # 실제 다운로드된 트레일러 영상의 imdb_id를 csv 파일에 행 단위로 기록
         i += 1
         j += 1
-        print(i)
-        print(j)
+        print(f"progress:{i}")
+        print(f"extract:{j}")
     except VideoPrivate: # 비공개 영상일 경우 예외처리
         i += 1
-        print(i)
+        print(f"progress:{i}")
         continue
     except AgeRestrictedError:# 연령 제한 영상일 경우 예외처리
         i += 1
-        print(i)
+        print(f"progress:{i}")
         continue
     except LiveStreamError:  # 라이브 영상일 경우 예외처리
         i += 1
-        print(i)
+        print(f"progress:{i}")
         continue
     except VideoUnavailable:  # 이용불가 영상일 경우 예외처리
         i += 1
-        print(i)
+        print(f"progress:{i}")
         continue
     except :
         i += 1
+        print(f"progress:{i}")        
         print('etc...\n')
         continue
 print(f"총 비디오 갯수:{i}")
