@@ -18,54 +18,66 @@ import sys
 import cv2
 import feature_extractor
 import numpy
-import tensorflow as tf
-from tensorflow import app
-from tensorflow import flags
+# import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
-FLAGS = flags.FLAGS
+# from tensorflow import app
+from absl import app
+# from tensorflow import flags
 
+
+
+
+# FLAGS = flags.FLAGS
+FLAGS = tf.app.flags.FLAGS
 # In OpenCV3.X, this is available as cv2.CAP_PROP_POS_MSEC
 # In OpenCV2.X, this is available as cv2.cv.CV_CAP_PROP_POS_MSEC
 CAP_PROP_POS_MSEC = 0
 
 if __name__ == '__main__':
   # Required flags for input and output.
-  flags.DEFINE_string(
+  tf.app.flags.DEFINE_string(
       'output_tfrecords_file', None,
       'File containing tfrecords will be written at this path.')
-  flags.DEFINE_string(
+  tf.app.flags.DEFINE_string(
       'input_videos_csv', None,
       'CSV file with lines "<video_file>,<labels>", where '
       '<video_file> must be a path of a video and <labels> '
       'must be an integer list joined with semi-colon ";"')
+  
   # Optional flags.
-  flags.DEFINE_string('model_dir', os.path.join(os.getenv('HOME'), 'yt8m'),
-                      'Directory to store model files. It defaults to ~/yt8m')
+  tf.app.flags.DEFINE_string('model_dir', os.path.join(os.path.expanduser('~user'), 'yt8m'),
+                        'Directory to store model files. It defaults to ~/yt8m')  
+    #   tf.app.flags.DEFINE_string('model_dir', os.path.join(os.getenv('HOME'), 'yt8m'),
+    #                       'Directory to store model files. It defaults to ~/yt8m')
+
+
+    # MODEL_DIR = os.path.join(os.path.expanduser('~user'), 'yt8m')
 
   # The following flags are set to match the YouTube-8M dataset format.
-  flags.DEFINE_integer('frames_per_second', 1,
+  tf.app.flags.DEFINE_integer('frames_per_second', 1,
                        'This many frames per second will be processed')
-  flags.DEFINE_boolean(
+  tf.app.flags.DEFINE_boolean(
       'skip_frame_level_features', False,
       'If set, frame-level features will not be written: only '
       'video-level features will be written with feature '
       'names mean_*')
-  flags.DEFINE_string(
+  tf.app.flags.DEFINE_string(
       'labels_feature_key', 'labels',
       'Labels will be written to context feature with this '
       'key, as int64 list feature.')
-  flags.DEFINE_string(
+  tf.app.flags.DEFINE_string(
       'image_feature_key', 'rgb',
       'Image features will be written to sequence feature with '
       'this key, as bytes list feature, with only one entry, '
       'containing quantized feature string.')
-  flags.DEFINE_string(
+  tf.app.flags.DEFINE_string(
       'video_file_feature_key', 'id',
       'Input <video_file> will be written to context feature '
       'with this key, as bytes list feature, with only one '
       'entry, containing the file path of the video. This '
       'can be used for debugging but not for training or eval.')
-  flags.DEFINE_boolean(
+  tf.app.flags.DEFINE_boolean(
       'insert_zero_audio_features', True,
       'If set, inserts features with name "audio" to be 128-D '
       'zero vectors. This allows you to use YouTube-8M '
